@@ -133,6 +133,53 @@ class AnnotationAPITests(MediaAPITestCase):
         response = self.annotate(self.make_image(), color="red")
         self.assertEqual(response.status_code, 400)
 
+    def test_create_defaults_to_polygon(self):
+        response = self.annotate(self.make_image())
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.data["shape_type"], "polygon")
+
+    def test_create_rectangle_point_and_polyline(self):
+        image = self.make_image()
+        cases = [
+            ("rectangle", [[0.1, 0.1], [0.6, 0.5]]),
+            ("point", [[0.5, 0.5]]),
+            ("polyline", [[0.1, 0.9], [0.5, 0.2], [0.9, 0.8]]),
+        ]
+        for shape_type, points in cases:
+            response = self.annotate(image, shape_type=shape_type, points=points)
+            self.assertEqual(response.status_code, 201, msg=shape_type)
+            self.assertEqual(response.data["shape_type"], shape_type)
+            self.assertEqual(response.data["points"], points)
+
+    def test_shape_point_count_rules_enforced(self):
+        image = self.make_image()
+        bad_cases = [
+            ("rectangle", [[0.1, 0.1], [0.4, 0.4], [0.6, 0.6]]),  # exactly 2 required
+            ("point", [[0.1, 0.1], [0.2, 0.2]]),  # exactly 1 required
+            ("polyline", [[0.5, 0.5]]),  # at least 2 required
+            ("polygon", [[0.1, 0.1], [0.5, 0.5]]),  # at least 3 required
+        ]
+        for shape_type, points in bad_cases:
+            response = self.annotate(image, shape_type=shape_type, points=points)
+            self.assertEqual(response.status_code, 400, msg=shape_type)
+            self.assertIn("points", response.data["errors"])
+
+    def test_invalid_shape_type_rejected(self):
+        response = self.annotate(self.make_image(), shape_type="circle")
+        self.assertEqual(response.status_code, 400)
+
+    def test_update_respects_existing_shape_rules(self):
+        image = self.make_image()
+        rect_id = self.annotate(
+            image, shape_type="rectangle", points=[[0.1, 0.1], [0.5, 0.5]]
+        ).data["id"]
+        response = self.client.patch(
+            f"/api/annotations/{rect_id}/",
+            {"points": [[0.1, 0.1], [0.4, 0.4], [0.6, 0.6]]},
+            format="json",
+        )
+        self.assertEqual(response.status_code, 400)
+
     def test_update_annotation_points_label_and_color(self):
         image = self.make_image()
         annotation_id = self.annotate(image).data["id"]

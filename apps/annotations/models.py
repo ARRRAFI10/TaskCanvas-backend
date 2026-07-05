@@ -20,11 +20,19 @@ class Image(models.Model):
 
 
 class Annotation(models.Model):
+    class Shape(models.TextChoices):
+        POLYGON = "polygon", "Polygon"
+        RECTANGLE = "rectangle", "Rectangle"
+        POINT = "point", "Point"
+        POLYLINE = "polyline", "Polyline"
+
     image = models.ForeignKey(Image, on_delete=models.CASCADE, related_name="annotations")
+    shape_type = models.CharField(max_length=12, choices=Shape.choices, default=Shape.POLYGON)
     label = models.CharField(max_length=100, blank=True)
     color = models.CharField(max_length=7, default="#22d3ee")
-    # Polygon vertices as [[x, y], ...] with every coordinate normalized to 0..1
-    # of the image dimensions, so drawings are resolution-independent.
+    # Vertices as [[x, y], ...] with every coordinate normalized to 0..1 of the
+    # image dimensions, so drawings are resolution-independent. Rectangles store
+    # two opposite corners; points store a single pair.
     points = models.JSONField()
     created_at = models.DateTimeField(auto_now_add=True)
 

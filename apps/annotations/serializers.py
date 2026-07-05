@@ -8,6 +8,14 @@ ALLOWED_FORMATS = {"JPEG", "PNG", "WEBP"}
 MAX_UPLOAD_BYTES = 10 * 1024 * 1024
 HEX_COLOR = re.compile(r"#[0-9a-fA-F]{6}")
 
+# shape_type -> (min points, max points or None, error message)
+SHAPE_RULES = {
+    Annotation.Shape.POLYGON: (3, None, "A polygon needs at least 3 vertices."),
+    Annotation.Shape.POLYLINE: (2, None, "A polyline needs at least 2 vertices."),
+    Annotation.Shape.RECTANGLE: (2, 2, "A rectangle is defined by exactly 2 corner points."),
+    Annotation.Shape.POINT: (1, 1, "A point has exactly 1 coordinate pair."),
+}
+
 
 class ImageSerializer(serializers.ModelSerializer):
     annotation_count = serializers.SerializerMethodField()
@@ -52,7 +60,7 @@ class ImageSerializer(serializers.ModelSerializer):
 class AnnotationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Annotation
-        fields = ("id", "image", "label", "color", "points", "created_at")
+        fields = ("id", "image", "shape_type", "label", "color", "points", "created_at")
         read_only_fields = ("id", "image", "created_at")
 
     def validate_color(self, value):
@@ -61,8 +69,9 @@ class AnnotationSerializer(serializers.ModelSerializer):
         return value
 
     def validate_points(self, value):
-        if not isinstance(value, list) or len(value) < 3:
-            raise serializers.ValidationError("A polygon needs at least 3 vertices.")
+        """Structural checks only; the shape-specific count rule lives in validate()."""
+        if not isinstance(value, list) or len(value) == 0:
+            raise serializers.ValidationError("Points must be a non-empty list.")
         for vertex in value:
             if not isinstance(vertex, (list, tuple)) or len(vertex) != 2:
                 raise serializers.ValidationError("Each vertex must be an [x, y] pair.")
@@ -76,3 +85,14 @@ class AnnotationSerializer(serializers.ModelSerializer):
                     "Coordinates must be normalized to the 0–1 range."
                 )
         return value
+
+    def validate(self, attrs):
+        shape = attrs.get("shape_type") or (
+            self.instance.shape_type if self.instance else Annotation.Shape.POLYGON
+        )
+        points = attrs.get("points", self.instance.points if self.instance else None)
+        if points is not None:
+            minimum, maximum, message = SHAPE_RULES[Annotation.Shape(shape)]
+            if len(points) < minimum or (maximum is not None and len(points) > maximum):
+                raise serializers.ValidationError({"points": [message]})
+        return attrs
