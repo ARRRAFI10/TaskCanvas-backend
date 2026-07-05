@@ -27,7 +27,10 @@ INSTALLED_APPS = [
     "rest_framework",
     "corsheaders",
     # Local
+    "core",
     "apps.accounts",
+    "apps.tasks",
+    "apps.annotations",
 ]
 
 MIDDLEWARE = [
@@ -94,6 +97,7 @@ REST_FRAMEWORK = {
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
+    "EXCEPTION_HANDLER": "core.exceptions.api_exception_handler",
 }
 
 SIMPLE_JWT = {
