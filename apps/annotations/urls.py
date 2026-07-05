@@ -1,7 +1,7 @@
 from django.urls import path
 from rest_framework.routers import SimpleRouter
 
-from .views import AnnotationDestroyView, AnnotationListCreateView, ImageViewSet
+from .views import AnnotationDetailView, AnnotationListCreateView, ImageViewSet
 
 router = SimpleRouter()
 router.register("images", ImageViewSet, basename="image")
@@ -12,6 +12,6 @@ urlpatterns = [
         AnnotationListCreateView.as_view(),
         name="image-annotations",
     ),
-    path("annotations/<int:pk>/", AnnotationDestroyView.as_view(), name="annotation-detail"),
+    path("annotations/<int:pk>/", AnnotationDetailView.as_view(), name="annotation-detail"),
     *router.urls,
 ]

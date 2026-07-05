@@ -133,6 +133,40 @@ class AnnotationAPITests(MediaAPITestCase):
         response = self.annotate(self.make_image(), color="red")
         self.assertEqual(response.status_code, 400)
 
+    def test_update_annotation_points_label_and_color(self):
+        image = self.make_image()
+        annotation_id = self.annotate(image).data["id"]
+        new_points = [[0.2, 0.2], [0.8, 0.25], [0.75, 0.8], [0.25, 0.75]]
+        response = self.client.patch(
+            f"/api/annotations/{annotation_id}/",
+            {"points": new_points, "label": "reshaped", "color": "#34d399"},
+            format="json",
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["points"], new_points)
+        self.assertEqual(response.data["label"], "reshaped")
+        self.assertEqual(response.data["color"], "#34d399")
+
+    def test_update_rejects_invalid_points(self):
+        image = self.make_image()
+        annotation_id = self.annotate(image).data["id"]
+        response = self.client.patch(
+            f"/api/annotations/{annotation_id}/",
+            {"points": [[0.2, 0.2], [1.5, 0.5], [0.5, 0.9]]},
+            format="json",
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("points", response.data["errors"])
+
+    def test_cannot_update_other_users_annotation(self):
+        theirs = Annotation.objects.create(
+            image=self.make_image(user=self.other), points=VALID_POINTS
+        )
+        response = self.client.patch(
+            f"/api/annotations/{theirs.pk}/", {"label": "hijacked"}, format="json"
+        )
+        self.assertEqual(response.status_code, 404)
+
     def test_delete_annotation(self):
         image = self.make_image()
         annotation_id = self.annotate(image).data["id"]

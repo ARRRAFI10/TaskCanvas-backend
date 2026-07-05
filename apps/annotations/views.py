@@ -40,6 +40,10 @@ class AnnotationListCreateView(generics.ListCreateAPIView):
         serializer.save(image=self.get_image())
 
 
-class AnnotationDestroyView(generics.DestroyAPIView):
+class AnnotationDetailView(generics.RetrieveUpdateDestroyAPIView):
+    """PATCH lets the canvas reshape, move, relabel, or recolor a polygon."""
+
+    serializer_class = AnnotationSerializer
+
     def get_queryset(self):
         return Annotation.objects.filter(image__user=self.request.user)
