@@ -16,8 +16,15 @@ CORS_ALLOWED_ORIGINS = [
 
 CSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS
 
-# HTTPS hardening
+# HTTPS hardening — PythonAnywhere terminates TLS at its proxy
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 SECURE_HSTS_SECONDS = 60 * 60 * 24 * 30
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+
+# JSON-only API in production (no browsable HTML renderer)
+REST_FRAMEWORK = {
+    **REST_FRAMEWORK,  # noqa: F405
+    "DEFAULT_RENDERER_CLASSES": ("rest_framework.renderers.JSONRenderer",),
+}
