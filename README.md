@@ -10,6 +10,11 @@ The Next.js frontend lives in its own repository: **taskcanvas-frontend**.
 | Live app | https://task-canvas-frontend-nu.vercel.app |
 | Frontend repo | https://github.com/ARRRAFI10/TaskCanvas-frontend |
 | Demo login | `demo@taskcanvas.app` / `TaskCanvas#2026` |
+| Django admin | https://arrrafi10.pythonanywhere.com/admin/ *(credentials on request)* |
+
+You can also **create your own account** at
+[`/register`](https://task-canvas-frontend-nu.vercel.app/register) — no email confirmation;
+you land on your own empty board and image library.
 
 ## What this API does
 
