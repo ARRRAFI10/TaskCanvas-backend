@@ -16,7 +16,8 @@ Your app will live at `https://<username>.pythonanywhere.com`.
 Open **Consoles → Bash** and run:
 
 ```bash
-git clone https://github.com/<you>/taskcanvas-backend.git
+# cloned into a lowercase dir so every path below stays consistent
+git clone https://github.com/ARRRAFI10/TaskCanvas-backend.git taskcanvas-backend
 cd taskcanvas-backend
 
 mkvirtualenv --python=python3.13 taskcanvas
@@ -73,12 +74,22 @@ from django.core.wsgi import get_wsgi_application
 application = get_wsgi_application()
 ```
 
-## 6. Static & media mappings (Web tab → Static files)
+## 6. Static mapping (Web tab → Static files)
+
+Add **one** mapping — for `/static/` only:
 
 | URL | Directory |
 |---|---|
 | `/static/` | `/home/<username>/taskcanvas-backend/staticfiles` |
-| `/media/` | `/home/<username>/taskcanvas-backend/media` |
+
+> **Do not add a `/media/` mapping.** PythonAnywhere's static mappings serve files
+> straight off disk, bypassing Django — and therefore bypassing `CorsMiddleware`, so
+> the response arrives with no `Access-Control-Allow-Origin` header. The annotation
+> canvas requests images with `crossOrigin="anonymous"` (Konva's filters need an
+> untainted canvas), and the browser silently discards a cross-origin image that
+> lacks that header, so **every image on `/annotate` would fail to load**.
+> `config/urls.py` serves `/media/` through Django when `DEBUG=False` precisely so
+> the header survives. Slower than a static mapping, irrelevant at demo scale.
 
 ## 7. HTTPS + reload
 
