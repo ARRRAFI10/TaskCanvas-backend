@@ -6,9 +6,9 @@ The Next.js frontend lives in its own repository: **taskcanvas-frontend**.
 
 | | |
 |---|---|
-| Live API | `https://<username>.pythonanywhere.com` *(link added after deploy)* |
-| Frontend repo | `https://github.com/<you>/taskcanvas-frontend` |
-| Live app | `https://<project>.vercel.app` |
+| Live API | https://arrrafi10.pythonanywhere.com |
+| Live app | https://task-canvas-frontend-nu.vercel.app |
+| Frontend repo | https://github.com/ARRRAFI10/TaskCanvas-frontend |
 | Demo login | `demo@taskcanvas.app` / `TaskCanvas#2026` |
 
 ## What this API does
@@ -60,8 +60,8 @@ The Next.js frontend lives in its own repository: **taskcanvas-frontend**.
 - **Django:** 5.2 LTS · **DRF:** 3.17 · **Database:** SQLite via Django ORM
 
 ```bash
-git clone https://github.com/<you>/taskcanvas-backend.git
-cd taskcanvas-backend
+git clone https://github.com/ARRRAFI10/TaskCanvas-backend.git
+cd TaskCanvas-backend
 
 # 1. Virtual environment
 python -m venv venv
